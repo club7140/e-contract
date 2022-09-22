@@ -1280,7 +1280,7 @@ contract BlindBox is ERC721Enumerable, Ownable{
     using Strings for uint256;
     string internal BaseURI;
     bool private _blindBoxOpened = false;
-    string private _blindTokenURI = "";
+    string private _blindTokenURI = "https://muadao-nft.s3.ap-southeast-1.amazonaws.com/blindbox_unopen.png";
     uint public Total = 10;
     mapping(uint256 => string) internal _tokenURIs;
     mapping(address => bool) public whitelist;
