@@ -1281,6 +1281,7 @@ contract BlindBox is ERC721Enumerable, Ownable{
     string internal BaseURI;
     bool private _blindBoxOpened = false;
     string private _blindTokenURI = "";
+    uint public Total = 10;
     mapping(uint256 => string) internal _tokenURIs;
     mapping(address => bool) public whitelist;
 
@@ -1295,6 +1296,7 @@ contract BlindBox is ERC721Enumerable, Ownable{
     function claimNFT()  public  returns(uint256){
         require(whitelist[msg.sender], "The user is not in whitelist.");
         require(!claimStatus[msg.sender], "The user already claimed.");
+        require(next_tokenID < Total, "All blind boxes has been minted." );
         uint256 _next_tokenID = next_tokenID;
         _safeMint(msg.sender, _next_tokenID);
         claimStatus[msg.sender] = true;
@@ -1303,12 +1305,20 @@ contract BlindBox is ERC721Enumerable, Ownable{
         return _next_tokenID;
     }
 
+    function setBlindTokenURI(string calldata blindTokenURI) public onlyOwner {
+      _blindTokenURI = blindTokenURI;
+    }
+
     function _isBlindBoxOpened() internal view returns (bool) {
       return _blindBoxOpened;
     }
 
-    function setBlindBoxOpened(bool _status) public onlyOwner{
-      _blindBoxOpened = _status;
+    function setBlindBoxOpened(bool status) public onlyOwner{
+      _blindBoxOpened = status;
+    }
+
+    function setTotal(uint total) public onlyOwner {
+      Total = total;
     }
 
     function getBaseURI() public view returns (string memory) {
