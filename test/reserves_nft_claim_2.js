@@ -170,6 +170,11 @@ contract("block", async (accounts) => {
     assert.equal(nextTokenID, 1000, "reservesClaimNFT not work");
   });
 
+  it("claimNFT not work because of under price", async () => {
+    let block = await Block.deployed();
+    await truffleAssert.reverts( block.claimNFT({value: 1e16, from: accounts[1]}), "You deposit value is less than price");
+  });
+
   it("claimNFT work until reservesClaimNFT finished", async () => {
     let block = await Block.deployed();
     await block.claimNFT({value: 1e17, from: accounts[1]});
