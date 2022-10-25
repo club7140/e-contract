@@ -1287,6 +1287,7 @@ contract Block is ERC721Enumerable, Ownable{
     uint256 public discountPrice = 50000000000000000;
     // Reserve NFT number
     uint public reserves = 1000;
+    uint private reservesStep = 0;
 
     mapping(uint256 => string) internal _tokenURIs;
     mapping(address => bool) public whitelist;
@@ -1315,12 +1316,14 @@ contract Block is ERC721Enumerable, Ownable{
 
     // reserves NFT claim
     function reservesClaimNFT() public onlyOwner {
-      for (uint i = 0; i < reserves; i++) {
+      require(next_tokenID < reserves, "The claimed reservation block exceeds the total");
+      for (uint i = reservesStep; i < reservesStep+50; i++) {
         uint256 _next_tokenID = next_tokenID;
         _safeMint(msg.sender, _next_tokenID);
         next_tokenID++;
         emit ClaimNFT(msg.sender, _next_tokenID);
       }
+      reservesStep = next_tokenID;
     }
 
     // owner withdraw fee
@@ -1345,7 +1348,7 @@ contract Block is ERC721Enumerable, Ownable{
     }
 
     function setReserves(uint _reserves) public onlyOwner {
-      require(_reserves <= total, "Your reserves is more than total");
+      require(_reserves <= total, "The reservation exceeds the total");
       reserves = _reserves;
     }
 
