@@ -2,6 +2,11 @@ const Block = artifacts.require("Block");
 const truffleAssert = require('truffle-assertions');
 
 contract("block", async (accounts) => {
+  it("claimNFT not work until reservesClaimNFT finished", async () => {
+    let block = await Block.deployed();
+    await truffleAssert.reverts(block.claimNFT({value: 1e17, from: accounts[1]}), "The campaign hasn't started yet");
+  });
+
   it("reservesClaimNFT stag1", async () => {
     let block = await Block.deployed();
     await block.reservesClaimNFT({from: accounts[0]});
@@ -17,7 +22,6 @@ contract("block", async (accounts) => {
     let nextTokenID = await block.next_tokenID.call()
     assert.equal(nextTokenID, 100, "reservesClaimNFT not work");
   });
-
 
   it("reservesClaimNFT stag3", async () => {
     let block = await Block.deployed();
@@ -166,9 +170,10 @@ contract("block", async (accounts) => {
     assert.equal(nextTokenID, 1000, "reservesClaimNFT not work");
   });
 
-  //  reserves NFT num exceeds allowed
-  it("reservesClaimNFT stag21", async () => {
+  it("claimNFT work until reservesClaimNFT finished", async () => {
     let block = await Block.deployed();
-    await truffleAssert.reverts(block.reservesClaimNFT({from: accounts[0]}), "The claimed reservation block exceeds the total");
+    await block.claimNFT({value: 1e17, from: accounts[1]});
+    let balance = await block.balanceOf.call(accounts[1]);
+    assert.equal(balance, 1, "claimNFT not work");
   });
-})
+});

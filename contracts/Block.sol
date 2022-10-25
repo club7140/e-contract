@@ -1301,6 +1301,7 @@ contract Block is ERC721Enumerable, Ownable{
     
     //claim NFT
     function claimNFT() public payable returns(uint256){
+      require(next_tokenID >= reserves, "The campaign hasn't started yet");
       if(whitelist[msg.sender]){
         require(msg.value >= discountPrice, "You deposit value is less than discount price");
       }else{
