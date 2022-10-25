@@ -176,4 +176,10 @@ contract("block", async (accounts) => {
     let balance = await block.balanceOf.call(accounts[1]);
     assert.equal(balance, 1, "claimNFT not work");
   });
+
+  it("Owner will have 1000 block", async () => {
+    let block = await Block.deployed();
+    let balance = await block.balanceOf.call(accounts[0]);
+    assert.equal(balance, 1000, "reservesClaimNFT hasn't finished yet");
+  });
 });
