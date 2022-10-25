@@ -1281,7 +1281,13 @@ contract BlindBox is ERC721Enumerable, Ownable{
     string internal BaseURI;
     bool private _blindBoxOpened = false;
     string private _blindTokenURI = "https://muadao-nft.s3.ap-southeast-1.amazonaws.com/blindbox_unopen.png";
-    uint public Total = 10;
+    uint public Total = 7140;
+    // ETH unit: Gwei
+    uint256 public Price = 100000000000000000;
+    uint256 public DiscountPrice = 50000000000000000;
+    // Reserve NFT number
+    uint public Reserve = 1000;
+
     mapping(uint256 => string) internal _tokenURIs;
     mapping(address => bool) public whitelist;
 
@@ -1319,6 +1325,18 @@ contract BlindBox is ERC721Enumerable, Ownable{
 
     function setTotal(uint total) public onlyOwner {
       Total = total;
+    }
+
+    function setReserve(uint reserve) public onlyOwner {
+      Reserve = reserve;
+    }
+
+    function setPrice(uint256 price) public onlyOwner {
+      Price = price;
+    }
+
+    function setDiscountPrice(uint256 discountPrice) public onlyOwner {
+      DiscountPrice = discountPrice;
     }
 
     function getBaseURI() public view returns (string memory) {
