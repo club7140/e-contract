@@ -1,5 +1,5 @@
-const BlindBox = artifacts.require("BlindBox");
+const Block = artifacts.require("Block");
 
 module.exports = function(deployer) {
-  deployer.deploy(BlindBox);
+  deployer.deploy(Block);
 };
