@@ -1280,7 +1280,7 @@ contract Block is ERC721Enumerable, Ownable{
     using Strings for uint256;
     string internal baseURI;
     bool private _blindBoxOpened = false;
-    string private _blindTokenURI = "https://muadao-nft.s3.ap-southeast-1.amazonaws.com/blindbox_unopen.png";
+    string private _blindTokenURI = "";
     uint public total = 7140;
     // ETH unit: Gwei
     uint256 public price = 100000000000000000;
@@ -1314,8 +1314,7 @@ contract Block is ERC721Enumerable, Ownable{
     }
 
     // reserves NFT claim
-    function reserveClaimNFT() public onlyOwner {
-      require(next_tokenID < total, "All block has been minted." );
+    function reservesClaimNFT() public onlyOwner {
       for (uint i = 0; i < reserves; i++) {
         uint256 _next_tokenID = next_tokenID;
         _safeMint(msg.sender, _next_tokenID);
