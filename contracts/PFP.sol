@@ -1510,10 +1510,11 @@ contract PFP is ERC721Enumerable, Ownable {
 
     function claimNFT() public onlyOwner {
       uint step = total - reservesStep;
+      require(step > 0, "All block has been minted.");
+      
       if(step > 50 ){
         step = 50;
       }
-      require(next_tokenID <= total-step, "All block has been minted.");
       for (uint i = reservesStep; i < reservesStep+step; i++) {
         uint256 _next_tokenID = next_tokenID;
         _safeMint(msg.sender, _next_tokenID);

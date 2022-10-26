@@ -1321,10 +1321,10 @@ contract Block is ERC721Enumerable, Ownable{
     // reserves NFT claim
     function reservesClaimNFT() public onlyOwner {
       uint step = reserves - reservesStep;
+      require(step > 0, "The claimed reservation block exceeds the total");
       if(step > 50 ){
         step = 50;
       }
-      require(next_tokenID <= reserves-step, "The claimed reservation block exceeds the total");
       for (uint i = reservesStep; i < reservesStep+step; i++) {
         uint256 _next_tokenID = next_tokenID;
         _safeMint(msg.sender, _next_tokenID);
