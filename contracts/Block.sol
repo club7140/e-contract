@@ -1292,7 +1292,8 @@ contract Block is ERC721Enumerable, Ownable{
     mapping(uint256 => string) internal _tokenURIs;
     mapping(address => bool) public whitelist;
 
-    // mapping(address => bool) public claimStatus; 
+    mapping(address => uint8) public whitelistClaimStatus; 
+    uint8 public whitelistClaimLimit = 5;
     uint256 public next_tokenID;
     event ClaimNFT(address _user, uint256 _tokenID);
     event WhitelistAdded(address indexed user);
@@ -1303,11 +1304,13 @@ contract Block is ERC721Enumerable, Ownable{
     function claimNFT() public payable returns(uint256){
       require(next_tokenID >= reserves, "The campaign hasn't started yet");
       if(whitelist[msg.sender]){
-        require(msg.value >= discountPrice, "You deposit value is less than discount price");
+        require(msg.value >= discountPrice, "Your deposit value is less than discount price");
+        require(whitelistClaimStatus[msg.sender] < whitelistClaimLimit, "Your claim have exceeded the limit");
+        whitelistClaimStatus[msg.sender]++;
       }else{
-        require(msg.value >= price, "You deposit value is less than price");
+        require(msg.value >= price, "Your deposit value is less than price");
       }
-      require(next_tokenID < total, "All block has been minted." );
+      require(next_tokenID < total, "All block has been minted.");
       uint256 _next_tokenID = next_tokenID;
       _safeMint(msg.sender, _next_tokenID);
       next_tokenID++;
@@ -1355,6 +1358,10 @@ contract Block is ERC721Enumerable, Ownable{
 
     function setPrice(uint256 _price) public onlyOwner {
       price = _price;
+    }
+
+    function setWhitelistClaimLimit(uint8 _whitelistClaimLimit) public onlyOwner {
+      whitelistClaimLimit = _whitelistClaimLimit;
     }
 
     function setDiscountPrice(uint256 _discountPrice) public onlyOwner {

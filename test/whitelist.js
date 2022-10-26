@@ -167,7 +167,7 @@ contract("block", async (accounts) => {
 
   it("can't work if you not in whitelist", async () => {
     let block = await Block.deployed();
-    await truffleAssert.reverts(block.claimNFT({value: 5e16, from: accounts[1]}), "You deposit value is less than price");
+    await truffleAssert.reverts(block.claimNFT({value: 5e16, from: accounts[1]}), "Your deposit value is less than price");
   });
   
   it("can work if you in whitelist", async () => {
