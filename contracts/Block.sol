@@ -1275,34 +1275,68 @@ contract Ownable {
     }
 }
 
-contract BlindBox is ERC721Enumerable, Ownable{
+contract Block is ERC721Enumerable, Ownable{
     using SafeMath for uint256;
     using Strings for uint256;
-    string internal BaseURI;
+    string internal baseURI;
     bool private _blindBoxOpened = false;
-    string private _blindTokenURI = "https://muadao-nft.s3.ap-southeast-1.amazonaws.com/blindbox_unopen.png";
-    uint public Total = 10;
+    string private _blindTokenURI = "";
+    uint public total = 7140;
+    // ETH unit: Gwei
+    uint256 public price = 100000000000000000;
+    uint256 public discountPrice = 50000000000000000;
+    // Reserve NFT number
+    uint public reserves = 1000;
+    uint private reservesStep = 0;
+
     mapping(uint256 => string) internal _tokenURIs;
     mapping(address => bool) public whitelist;
 
-    mapping(address => bool) public claimStatus; 
+    mapping(address => uint8) public whitelistClaimStatus; 
+    uint8 public whitelistClaimLimit = 5;
     uint256 public next_tokenID;
     event ClaimNFT(address _user, uint256 _tokenID);
     event WhitelistAdded(address indexed user);
     event WhitelistRemoved(address indexed user);
-    constructor() ERC721("BlindBox", "BlindBox") {}
+    constructor() ERC721("Block", "Block") {}
     
-    //领取NFT
-    function claimNFT()  public  returns(uint256){
-        require(whitelist[msg.sender], "The user is not in whitelist.");
-        require(!claimStatus[msg.sender], "The user already claimed.");
-        require(next_tokenID < Total, "All blind boxes has been minted." );
+    //claim NFT
+    function claimNFT() public payable returns(uint256){
+      require(next_tokenID >= reserves, "The campaign hasn't started yet");
+      if(whitelist[msg.sender]){
+        require(msg.value >= discountPrice, "Your deposit value is less than discount price");
+        require(whitelistClaimStatus[msg.sender] < whitelistClaimLimit, "Your claim have exceeded the limit");
+        whitelistClaimStatus[msg.sender]++;
+      }else{
+        require(msg.value >= price, "Your deposit value is less than price");
+      }
+      require(next_tokenID < total, "All block has been minted.");
+      uint256 _next_tokenID = next_tokenID;
+      _safeMint(msg.sender, _next_tokenID);
+      next_tokenID++;
+      emit ClaimNFT(msg.sender, _next_tokenID);
+      return _next_tokenID;
+    }
+
+    // reserves NFT claim
+    function reservesClaimNFT() public onlyOwner {
+      uint step = reserves - reservesStep;
+      require(step > 0, "The claimed reservation block exceeds the total");
+      if(step > 50 ){
+        step = 50;
+      }
+      for (uint i = reservesStep; i < reservesStep+step; i++) {
         uint256 _next_tokenID = next_tokenID;
         _safeMint(msg.sender, _next_tokenID);
-        claimStatus[msg.sender] = true;
         next_tokenID++;
         emit ClaimNFT(msg.sender, _next_tokenID);
-        return _next_tokenID;
+      }
+      reservesStep = next_tokenID;
+    }
+
+    // owner withdraw fee
+    function withdrawFee() public onlyOwner {
+      payable(owner()).transfer(address(this).balance);
     }
 
     function setBlindTokenURI(string calldata blindTokenURI) public onlyOwner {
@@ -1317,20 +1351,37 @@ contract BlindBox is ERC721Enumerable, Ownable{
       _blindBoxOpened = status;
     }
 
-    function setTotal(uint total) public onlyOwner {
-      Total = total;
+    function setTotal(uint _total) public onlyOwner {
+      total = _total;
+    }
+
+    function setReserves(uint _reserves) public onlyOwner {
+      require(_reserves <= total, "The reservation exceeds the total");
+      reserves = _reserves;
+    }
+
+    function setPrice(uint256 _price) public onlyOwner {
+      price = _price;
+    }
+
+    function setWhitelistClaimLimit(uint8 _whitelistClaimLimit) public onlyOwner {
+      whitelistClaimLimit = _whitelistClaimLimit;
+    }
+
+    function setDiscountPrice(uint256 _discountPrice) public onlyOwner {
+      discountPrice = _discountPrice;
     }
 
     function getBaseURI() public view returns (string memory) {
-        return BaseURI;
+        return baseURI;
     }
 
-    function _baseURI() override internal view virtual returns (string memory) {
-        return BaseURI;
+    function _getBaseURI() internal view virtual returns (string memory) {
+        return baseURI;
     }
 
-    function setbaseURI(string memory _BaseURI) public onlyOwner {
-        BaseURI = _BaseURI;
+    function setBaseURI(string memory _baseURI) public onlyOwner {
+        baseURI = _baseURI;
     }
 
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public onlyOwner{
@@ -1345,17 +1396,17 @@ contract BlindBox is ERC721Enumerable, Ownable{
           string memory _tokenURI = _tokenURIs[tokenId];
 
           // If there is no base URI, return the token URI.
-          if (bytes(BaseURI).length == 0) {
+          if (bytes(baseURI).length == 0) {
             return _tokenURI;
           }
 
           // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
           if (bytes(_tokenURI).length > 0) {
-            return string(abi.encodePacked(BaseURI, _tokenURI));
+            return string(abi.encodePacked(baseURI, _tokenURI));
           }
 
           // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
-          return string(abi.encodePacked(BaseURI,"?id=", tokenId.toString()));
+          return string(abi.encodePacked(baseURI,"?id=", tokenId.toString()));
         }else{
           return _blindTokenURI;
         }   

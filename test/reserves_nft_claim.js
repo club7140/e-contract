@@ -9,6 +9,7 @@ contract("block", async (accounts) => {
     let nextTokenID = await block.next_tokenID.call()
     assert.equal(nextTokenID, 50, "reservesClaimNFT not work");
   });
+
   it("reservesClaimNFT stag2", async () => {
     let block = await Block.deployed();
     await block.reservesClaimNFT({from: accounts[0]});
@@ -165,16 +166,9 @@ contract("block", async (accounts) => {
     assert.equal(nextTokenID, 1000, "reservesClaimNFT not work");
   });
 
-  it("can't work if you not in whitelist", async () => {
+  //  reserves NFT num exceeds allowed
+  it("reservesClaimNFT stag21", async () => {
     let block = await Block.deployed();
-    await truffleAssert.reverts(block.claimNFT({value: 5e16, from: accounts[1]}), "Your deposit value is less than price");
-  });
-  
-  it("can work if you in whitelist", async () => {
-    let block = await Block.deployed();
-    await block.addWhitelist([accounts[1]]);
-    await block.claimNFT({value: 5e16, from: accounts[1]});
-    let balance = await block.balanceOf.call(accounts[1]);
-    assert.equal(balance, 1, "whitelist not work");
+    await truffleAssert.reverts(block.reservesClaimNFT({from: accounts[0]}), "The claimed reservation block exceeds the total");
   });
 })

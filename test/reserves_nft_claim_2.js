@@ -2,6 +2,11 @@ const Block = artifacts.require("Block");
 const truffleAssert = require('truffle-assertions');
 
 contract("block", async (accounts) => {
+  it("claimNFT not work until reservesClaimNFT finished", async () => {
+    let block = await Block.deployed();
+    await truffleAssert.reverts(block.claimNFT({value: 1e17, from: accounts[1]}), "The campaign hasn't started yet");
+  });
+
   it("reservesClaimNFT stag1", async () => {
     let block = await Block.deployed();
     await block.reservesClaimNFT({from: accounts[0]});
@@ -9,6 +14,7 @@ contract("block", async (accounts) => {
     let nextTokenID = await block.next_tokenID.call()
     assert.equal(nextTokenID, 50, "reservesClaimNFT not work");
   });
+
   it("reservesClaimNFT stag2", async () => {
     let block = await Block.deployed();
     await block.reservesClaimNFT({from: accounts[0]});
@@ -16,7 +22,6 @@ contract("block", async (accounts) => {
     let nextTokenID = await block.next_tokenID.call()
     assert.equal(nextTokenID, 100, "reservesClaimNFT not work");
   });
-
 
   it("reservesClaimNFT stag3", async () => {
     let block = await Block.deployed();
@@ -165,16 +170,21 @@ contract("block", async (accounts) => {
     assert.equal(nextTokenID, 1000, "reservesClaimNFT not work");
   });
 
-  it("can't work if you not in whitelist", async () => {
+  it("claimNFT not work because of under price", async () => {
     let block = await Block.deployed();
-    await truffleAssert.reverts(block.claimNFT({value: 5e16, from: accounts[1]}), "Your deposit value is less than price");
+    await truffleAssert.reverts(block.claimNFT({value: 1e16, from: accounts[1]}), "Your deposit value is less than price");
   });
-  
-  it("can work if you in whitelist", async () => {
+
+  it("claimNFT work until reservesClaimNFT finished", async () => {
     let block = await Block.deployed();
-    await block.addWhitelist([accounts[1]]);
-    await block.claimNFT({value: 5e16, from: accounts[1]});
+    await block.claimNFT({value: 1e17, from: accounts[1]});
     let balance = await block.balanceOf.call(accounts[1]);
-    assert.equal(balance, 1, "whitelist not work");
+    assert.equal(balance, 1, "claimNFT not work");
   });
-})
+
+  it("Owner will have 1000 block", async () => {
+    let block = await Block.deployed();
+    let balance = await block.balanceOf.call(accounts[0]);
+    assert.equal(balance, 1000, "reservesClaimNFT hasn't finished yet");
+  });
+});

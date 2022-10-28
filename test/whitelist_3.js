@@ -165,16 +165,14 @@ contract("block", async (accounts) => {
     assert.equal(nextTokenID, 1000, "reservesClaimNFT not work");
   });
 
-  it("can't work if you not in whitelist", async () => {
-    let block = await Block.deployed();
-    await truffleAssert.reverts(block.claimNFT({value: 5e16, from: accounts[1]}), "Your deposit value is less than price");
-  });
-  
-  it("can work if you in whitelist", async () => {
+  it("whitelist account claim can't exceeds limit", async () => {
     let block = await Block.deployed();
     await block.addWhitelist([accounts[1]]);
     await block.claimNFT({value: 5e16, from: accounts[1]});
-    let balance = await block.balanceOf.call(accounts[1]);
-    assert.equal(balance, 1, "whitelist not work");
+    await block.claimNFT({value: 5e16, from: accounts[1]});
+    await block.claimNFT({value: 5e16, from: accounts[1]});
+    await block.claimNFT({value: 5e16, from: accounts[1]});
+    await block.claimNFT({value: 5e16, from: accounts[1]});
+    await truffleAssert.reverts(block.claimNFT({value: 5e16, from: accounts[1]}), "Your claim have exceeded the limit");
   });
 })

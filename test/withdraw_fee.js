@@ -164,17 +164,25 @@ contract("block", async (accounts) => {
     let nextTokenID = await block.next_tokenID.call()
     assert.equal(nextTokenID, 1000, "reservesClaimNFT not work");
   });
-
-  it("can't work if you not in whitelist", async () => {
-    let block = await Block.deployed();
-    await truffleAssert.reverts(block.claimNFT({value: 5e16, from: accounts[1]}), "Your deposit value is less than price");
-  });
   
-  it("can work if you in whitelist", async () => {
+  it("mint will produce fee", async () => {
     let block = await Block.deployed();
     await block.addWhitelist([accounts[1]]);
     await block.claimNFT({value: 5e16, from: accounts[1]});
-    let balance = await block.balanceOf.call(accounts[1]);
-    assert.equal(balance, 1, "whitelist not work");
+    await block.claimNFT({value: 1e17, from: accounts[2]});
+    let balance = await web3.eth.getBalance(block.address);
+    assert.equal(balance, 5e16 + 1e17, "mint fee not work");
+  });
+
+  it("normal account can't withdraw fee", async () => {
+    let block = await Block.deployed();
+    await truffleAssert.reverts(block.withdrawFee({from: accounts[1]}), "Ownable: caller is not the owner");
+  });
+
+  it("only owner can withdraw fee", async () => {
+    let block = await Block.deployed();
+    await block.withdrawFee({from: accounts[0]});
+    let balance = await web3.eth.getBalance(block.address);
+    assert.equal(balance, 0, "withdraw fee not work");
   });
 })
