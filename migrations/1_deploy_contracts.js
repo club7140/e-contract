@@ -1,7 +1,7 @@
-const Block = artifacts.require("Block");
+const TurfPlot = artifacts.require("TurfPlot");
 const PFP = artifacts.require("PFP");
 
 module.exports = function(deployer) {
-  deployer.deploy(Block);
+  deployer.deploy(TurfPlot);
   deployer.deploy(PFP);
 };
