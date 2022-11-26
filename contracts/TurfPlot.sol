@@ -1275,97 +1275,137 @@ contract Ownable {
     }
 }
 
-contract Block is ERC721Enumerable, Ownable{
+contract TurfPlot is ERC721Enumerable, Ownable{
     using SafeMath for uint256;
     using Strings for uint256;
     string internal baseURI;
-    bool private _blindBoxOpened = false;
-    string private _blindTokenURI = "";
-    uint public total = 7140;
+    uint256 public total = 7140;
+    uint256 public totalReserves = total;
     // ETH unit: Gwei
     uint256 public price = 100000000000000000;
     uint256 public discountPrice = 50000000000000000;
-    // Reserve NFT number
-    uint public reserves = 1000;
-    uint private reservesStep = 0;
 
     mapping(uint256 => string) internal _tokenURIs;
     mapping(address => bool) public whitelist;
 
-    mapping(address => uint8) public whitelistClaimStatus; 
-    uint8 public whitelistClaimLimit = 5;
-    uint256 public next_tokenID;
+    mapping(address => uint8) public claimStatus; 
+    uint8 public claimLimit = 5;
+    uint256 public nextTokenID;
+    uint256 public freeMintReserves;
+    uint256 public nswapMintReserves;
+    uint256 public selfMintReserves;
     event ClaimNFT(address _user, uint256 _tokenID);
     event WhitelistAdded(address indexed user);
     event WhitelistRemoved(address indexed user);
-    constructor() ERC721("Block", "Block") {}
+    constructor() ERC721("Turf Plot", "TurfPlot") {}
     
+    function addFreeMintReserves(uint256 _num) public onlyOwner {
+      require(_num <= totalReserves, "The number of shelves exceeds the number of stocks");
+      freeMintReserves = freeMintReserves.add(_num);
+      totalReserves = totalReserves.sub(_num);
+    }
+
+    function subFreeMintReserves(uint256 _num) public onlyOwner {
+      require(_num <= freeMintReserves, "The number of removals exceeds the total");
+      freeMintReserves = freeMintReserves.sub(_num);
+      totalReserves = totalReserves.add(_num);
+    }
+
+    function addNswapMintReserves(uint256 _num) public onlyOwner {
+      require(_num <= totalReserves, "The number of shelves exceeds the number of stocks");
+      nswapMintReserves = nswapMintReserves.add(_num);
+      totalReserves = totalReserves.sub(_num);
+    }
+
+    function subNswapMintReserves(uint256 _num) public onlyOwner {
+      require(_num <= nswapMintReserves, "The number of removals exceeds the total");
+      nswapMintReserves = nswapMintReserves.sub(_num);
+      totalReserves = totalReserves.add(_num);
+    }
+
+    function addSelfMintReserves(uint256 _num) public onlyOwner {
+      require(_num <= totalReserves, "The number of shelves exceeds the number of stocks");
+      selfMintReserves = selfMintReserves.add(_num);
+      totalReserves = totalReserves.sub(_num);
+    }
+
+    function subSelfMintReserves(uint256 _num) public onlyOwner {
+      require(_num <= selfMintReserves, "The number of removals exceeds the total");
+      selfMintReserves = selfMintReserves.sub(_num);
+      totalReserves = totalReserves.add(_num);
+    }
+
     //claim NFT
     function claimNFT() public payable returns(uint256){
-      require(next_tokenID >= reserves, "The campaign hasn't started yet");
       if(whitelist[msg.sender]){
         require(msg.value >= discountPrice, "Your deposit value is less than discount price");
-        require(whitelistClaimStatus[msg.sender] < whitelistClaimLimit, "Your claim have exceeded the limit");
-        whitelistClaimStatus[msg.sender]++;
+        require(claimStatus[msg.sender] < claimLimit, "Your claim have exceeded the limit");
+          claimStatus[msg.sender]++;
       }else{
         require(msg.value >= price, "Your deposit value is less than price");
       }
-      require(next_tokenID < total, "All block has been minted.");
-      uint256 _next_tokenID = next_tokenID;
-      _safeMint(msg.sender, _next_tokenID);
-      next_tokenID++;
-      emit ClaimNFT(msg.sender, _next_tokenID);
-      return _next_tokenID;
+      require(freeMintReserves > 0, "Currently no turf plot available");
+      uint256 _nextTokenID = nextTokenID;
+      _safeMint(msg.sender, _nextTokenID);
+      nextTokenID++;
+      freeMintReserves--;
+      emit ClaimNFT(msg.sender, _nextTokenID);
+      return _nextTokenID;
     }
 
-    // reserves NFT claim
-    function reservesClaimNFT() public onlyOwner {
-      uint step = reserves - reservesStep;
-      require(step > 0, "The claimed reservation block exceeds the total");
-      if(step > 50 ){
-        step = 50;
+    function nswapClaimNFT() public payable returns(uint256){
+      if(whitelist[msg.sender]){
+        require(msg.value >= discountPrice, "Your deposit value is less than discount price");
+        require(claimStatus[msg.sender] < claimLimit, "Your claim have exceeded the limit");
+          claimStatus[msg.sender]++;
+      }else{
+        require(msg.value >= price, "Your deposit value is less than price");
       }
-      for (uint i = reservesStep; i < reservesStep+step; i++) {
-        uint256 _next_tokenID = next_tokenID;
-        _safeMint(msg.sender, _next_tokenID);
-        next_tokenID++;
-        emit ClaimNFT(msg.sender, _next_tokenID);
-      }
-      reservesStep = next_tokenID;
+      require(nswapMintReserves > 0, "Currently no turf plot available");
+      uint256 _nextTokenID = nextTokenID;
+      _safeMint(msg.sender, _nextTokenID);
+      nextTokenID++;
+      nswapMintReserves--;
+      emit ClaimNFT(msg.sender, _nextTokenID);
+      return _nextTokenID;
     }
+
+    function selfClaimNFT() public onlyOwner returns(uint256){
+      require(selfMintReserves > 0, "Currently no turf plot available");
+      uint256 _nextTokenID = nextTokenID;
+      _safeMint(msg.sender, _nextTokenID);
+      nextTokenID++;
+      selfMintReserves--;
+      emit ClaimNFT(msg.sender, _nextTokenID);
+      return _nextTokenID;
+    }
+
+    function batchSelfClaimNFT() external returns(uint256){
+      uint batch = selfMintReserves;
+      if(batch > 50){
+        batch = 50;
+      }
+      for(uint i = 0; i < batch; i++){
+        selfClaimNFT();
+      }
+    }
+
 
     // owner withdraw fee
     function withdrawFee() public onlyOwner {
       payable(owner()).transfer(address(this).balance);
     }
 
-    function setBlindTokenURI(string calldata blindTokenURI) public onlyOwner {
-      _blindTokenURI = blindTokenURI;
-    }
-
-    function _isBlindBoxOpened() internal view returns (bool) {
-      return _blindBoxOpened;
-    }
-
-    function setBlindBoxOpened(bool status) public onlyOwner{
-      _blindBoxOpened = status;
-    }
-
     function setTotal(uint _total) public onlyOwner {
       total = _total;
-    }
-
-    function setReserves(uint _reserves) public onlyOwner {
-      require(_reserves <= total, "The reservation exceeds the total");
-      reserves = _reserves;
     }
 
     function setPrice(uint256 _price) public onlyOwner {
       price = _price;
     }
 
-    function setWhitelistClaimLimit(uint8 _whitelistClaimLimit) public onlyOwner {
-      whitelistClaimLimit = _whitelistClaimLimit;
+    function setClaimLimit(uint8 _claimLimit) public onlyOwner {
+      claimLimit = _claimLimit;
     }
 
     function setDiscountPrice(uint256 _discountPrice) public onlyOwner {
@@ -1391,25 +1431,19 @@ contract Block is ERC721Enumerable, Ownable{
 
 
     function tokenURI(uint256 tokenId) override public view returns (string memory) {
-        require(_exists(tokenId), "URI query for nonexistent token");
-        if(_blindBoxOpened){
-          string memory _tokenURI = _tokenURIs[tokenId];
+      require(_exists(tokenId), "URI query for nonexistent token");
+      string memory _tokenURI = _tokenURIs[tokenId];
+      // If there is no base URI, return the token URI.
+      if (bytes(baseURI).length == 0) {
+        return _tokenURI;
+      }
 
-          // If there is no base URI, return the token URI.
-          if (bytes(baseURI).length == 0) {
-            return _tokenURI;
-          }
-
-          // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
-          if (bytes(_tokenURI).length > 0) {
-            return string(abi.encodePacked(baseURI, _tokenURI));
-          }
-
-          // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
-          return string(abi.encodePacked(baseURI,"?id=", tokenId.toString()));
-        }else{
-          return _blindTokenURI;
-        }   
+      // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
+      if (bytes(_tokenURI).length > 0) {
+        return string(abi.encodePacked(baseURI, _tokenURI));
+      }
+      // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
+      return string(abi.encodePacked(baseURI,"?id=", tokenId.toString()));  
     }
 
     function isInWhitelist(address user) public view returns (bool) {
