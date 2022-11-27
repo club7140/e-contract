@@ -1393,7 +1393,7 @@ contract TurfPlot is ERC721Enumerable, Ownable{
       return _nextTokenID;
     }
 
-    function batchSelfClaimNFT() external returns(uint256){
+    function batchSelfClaimNFT() external {
       uint batch = selfMintReserves;
       if(batch > 50){
         batch = 50;
