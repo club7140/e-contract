@@ -15,5 +15,10 @@ contract("TurfPlot", async (accounts) => {
     await turfPlot.nswapPublicMint(total_mint, {value: total_mint * 1e17, from: accounts[1]})
     let balance = await turfPlot.balanceOf(accounts[1]);
     assert.equal(balance, total_mint, "nswapPublicMint failed");
+    let nswapTotalMintedData = await turfPlot.nswapTotalMinted.call();
+    assert.equal(total_mint, nswapTotalMintedData[0], "nswapTotalMinted has a wrong num");
+
+    let nswapUserCanMintNumData = await turfPlot.nswapUserCanMintNum.call(accounts[1]);
+    assert.equal(3, nswapUserCanMintNumData[0], "nswapUserCanMintNum has a wrong num");
   });
 })
