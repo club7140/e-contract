@@ -1336,7 +1336,7 @@ contract TurfPlot is ERC721Enumerable, Ownable{
     }
 
     //claim NFT
-    function claimNFT() public payable returns(uint256){
+    function claimNFT() external payable returns(uint256){
       if(whitelist[msg.sender]){
         require(msg.value >= discountPrice, "Your deposit value is less than discount price");
         require(claimStatus[msg.sender] < claimLimit, "Your claim have exceeded the limit");
@@ -1353,7 +1353,7 @@ contract TurfPlot is ERC721Enumerable, Ownable{
       return _nextTokenID;
     }
 
-    function nswapClaimNFT() public payable returns(uint256){
+    function nswapPublicMint() external payable returns(uint256){
       if(whitelist[msg.sender]){
         require(msg.value >= discountPrice, "Your deposit value is less than discount price");
         require(claimStatus[msg.sender] < claimLimit, "Your claim have exceeded the limit");

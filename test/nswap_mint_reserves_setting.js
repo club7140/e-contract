@@ -39,7 +39,7 @@ contract("TurfPlot", async (accounts) => {
     let nswapMintReservesAfter = await turfPlot.nswapMintReserves.call();
     let totalReservesAfter = await turfPlot.totalReserves.call();
     assert.equal(nswapMintReservesAfter, parseInt(nswapMintReservesBefore) - num, "nswapMintReserves has a wrong num");
-    assert.equal(totalReservesAfter, parseInt(totalReservesBefore) + num, "freeMintReserves has a wrong num");
+    assert.equal(totalReservesAfter, parseInt(totalReservesBefore) + num, "totalReserves has a wrong num");
   });
 
   it("nswapMintReserves can't sub exceed itself", async () => {
