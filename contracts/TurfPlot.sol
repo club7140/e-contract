@@ -1374,6 +1374,15 @@ contract TurfPlot is ERC721Enumerable, Ownable{
       return _nextTokenID;
     }
 
+    function nswapTotalMinted() external return(uint256, uint256){
+      return nswapMintedCount, 0;
+    }
+
+    function nswapUserCanMintNum(address user) external return(uint256, uint256){
+      uint canMint = claimLimit - claimStatus[user]
+      return canMint, 0
+    }
+
     function selfClaimNFT() public onlyOwner returns(uint256){
       require(selfMintReserves > 0, "Currently no turf plot available");
       uint256 _nextTokenID = nextTokenID;
@@ -1393,7 +1402,6 @@ contract TurfPlot is ERC721Enumerable, Ownable{
         selfClaimNFT();
       }
     }
-
 
     // owner withdraw fee
     function withdrawFee() public onlyOwner {
