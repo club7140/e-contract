@@ -1371,16 +1371,16 @@ contract TurfPlot is ERC721Enumerable, Ownable{
         emit ClaimNFT(msg.sender, _nextTokenID);
       }
       nswapMintedCount = nswapMintedCount + count;
-      return _nextTokenID;
+      return nswapMintedCount;
     }
 
-    function nswapTotalMinted() external return(uint256, uint256){
-      return nswapMintedCount, 0;
+    function nswapTotalMinted() external returns(uint256, uint256){
+      return (nswapMintedCount, 0);
     }
 
-    function nswapUserCanMintNum(address user) external return(uint256, uint256){
-      uint canMint = claimLimit - claimStatus[user]
-      return canMint, 0
+    function nswapUserCanMintNum(address user) external returns(uint256, uint256){
+      uint canMint = claimLimit - claimStatus[user];
+      return (canMint, 0);
     }
 
     function selfClaimNFT() public onlyOwner returns(uint256){
