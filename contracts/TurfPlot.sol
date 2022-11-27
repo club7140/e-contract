@@ -1294,6 +1294,7 @@ contract TurfPlot is ERC721Enumerable, Ownable{
     uint256 public freeMintReserves;
     uint256 public nswapMintReserves;
     uint256 public selfMintReserves;
+    uint256 public nswapMintedCount;
     event ClaimNFT(address _user, uint256 _tokenID);
     event WhitelistAdded(address indexed user);
     event WhitelistRemoved(address indexed user);
@@ -1337,36 +1338,39 @@ contract TurfPlot is ERC721Enumerable, Ownable{
 
     //claim NFT
     function claimNFT() external payable returns(uint256){
+      require(freeMintReserves > 0, "Currently no turf plot available");
+      require(claimStatus[msg.sender] < claimLimit, "Your claim have exceeded the limit");
       if(whitelist[msg.sender]){
         require(msg.value >= discountPrice, "Your deposit value is less than discount price");
-        require(claimStatus[msg.sender] < claimLimit, "Your claim have exceeded the limit");
-          claimStatus[msg.sender]++;
       }else{
         require(msg.value >= price, "Your deposit value is less than price");
       }
-      require(freeMintReserves > 0, "Currently no turf plot available");
       uint256 _nextTokenID = nextTokenID;
       _safeMint(msg.sender, _nextTokenID);
+      claimStatus[msg.sender]++;
       nextTokenID++;
       freeMintReserves--;
       emit ClaimNFT(msg.sender, _nextTokenID);
       return _nextTokenID;
     }
 
-    function nswapPublicMint() external payable returns(uint256){
+    function nswapPublicMint(uint256 count) external payable returns(uint256){
+      require(nswapMintReserves >= count, "Currently no enough turf plot available");
+      require((count + claimStatus[msg.sender]) <= claimLimit, "Your claim have exceeded the limit");
       if(whitelist[msg.sender]){
-        require(msg.value >= discountPrice, "Your deposit value is less than discount price");
-        require(claimStatus[msg.sender] < claimLimit, "Your claim have exceeded the limit");
-          claimStatus[msg.sender]++;
+        require(msg.value >= count * discountPrice, "Your deposit value is less than count * discountPrice");
       }else{
-        require(msg.value >= price, "Your deposit value is less than price");
+        require(msg.value >= count * price, "Your deposit value is less than count * price");
       }
-      require(nswapMintReserves > 0, "Currently no turf plot available");
-      uint256 _nextTokenID = nextTokenID;
-      _safeMint(msg.sender, _nextTokenID);
-      nextTokenID++;
-      nswapMintReserves--;
-      emit ClaimNFT(msg.sender, _nextTokenID);
+      for(uint i = 0; i < count; i++){
+        uint256 _nextTokenID = nextTokenID;
+        _safeMint(msg.sender, _nextTokenID);
+        claimStatus[msg.sender]++;
+        nextTokenID++;
+        nswapMintReserves--;
+        emit ClaimNFT(msg.sender, _nextTokenID);
+      }
+      nswapMintedCount = nswapMintedCount + count;
       return _nextTokenID;
     }
 
@@ -1396,7 +1400,7 @@ contract TurfPlot is ERC721Enumerable, Ownable{
       payable(owner()).transfer(address(this).balance);
     }
 
-    function setTotal(uint _total) public onlyOwner {
+    function setTotal(uint256 _total) public onlyOwner {
       total = _total;
     }
 
