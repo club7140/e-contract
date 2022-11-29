@@ -1374,11 +1374,11 @@ contract TurfPlot is ERC721Enumerable, Ownable{
       return nswapMintedCount;
     }
 
-    function nswapTotalMinted() external returns(uint256, uint256){
+    function nswapTotalMinted() external view returns(uint256, uint256){
       return (nswapMintedCount, 0);
     }
 
-    function nswapUserCanMintNum(address user) external returns(uint256, uint256){
+    function nswapUserCanMintNum(address user) external view returns(uint256, uint256){
       uint canMint = claimLimit - claimStatus[user];
       return (canMint, 0);
     }
@@ -1425,10 +1425,6 @@ contract TurfPlot is ERC721Enumerable, Ownable{
     }
 
     function getBaseURI() public view returns (string memory) {
-        return baseURI;
-    }
-
-    function _getBaseURI() internal view virtual returns (string memory) {
         return baseURI;
     }
 
