@@ -3,6 +3,8 @@
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
+import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
+
 interface IERC165 {
     /**
      * @dev Returns true if this contract implements the interface defined by
@@ -1275,7 +1277,7 @@ contract Ownable {
     }
 }
 
-contract TurfPlot is ERC721Enumerable, Ownable{
+contract TurfPlot is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
     using SafeMath for uint256;
     using Strings for uint256;
     string internal baseURI;
@@ -1474,5 +1476,26 @@ contract TurfPlot is ERC721Enumerable, Ownable{
           emit WhitelistRemoved(_whitelist[i]);
         }  
       }
+    }
+    
+    function setApprovalForAll(address operator, bool approved) public override (IERC721,ERC721)onlyAllowedOperatorApproval(operator) {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    function approve(address operator, uint256 tokenId) public override (IERC721,ERC721) onlyAllowedOperatorApproval(operator) {
+        super.approve(operator, tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public override (IERC721,ERC721) onlyAllowedOperator(from) {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public override (IERC721,ERC721) onlyAllowedOperator(from) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public override (IERC721,ERC721) onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId, data);
     }
 }
