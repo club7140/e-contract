@@ -1408,9 +1408,10 @@ contract TurfPlot is ERC721Enumerable, Ownable{
       payable(owner()).transfer(address(this).balance);
     }
 
-    function setTotal(uint256 _total) public onlyOwner {
-      total = _total;
-    }
+    // function setTotal(uint256 _total) public onlyOwner {
+    //   total = _total;
+    //   totalReserves = total;
+    // }
 
     function setPrice(uint256 _price) public onlyOwner {
       price = _price;
