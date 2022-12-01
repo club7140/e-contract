@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
+import "./DefaultOperatorFilterer.sol";
 
 interface IERC165 {
     /**
