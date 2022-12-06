@@ -1289,7 +1289,7 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
     event ClaimNFT(address _user, uint256 _tokenID);
     constructor() ERC721("Jersey", "Jersey") {}
 
-    function publicMint(uint256 count) external payable returns(uint256){
+    function publicMint(uint256 count) external returns(uint256){
       require(count <= oneTimeClaimLimit, "The amount of mining at one time exceeds the limit");
       for(uint i = 0; i < count; i++){
         uint256 _nextTokenID = nextTokenID;
@@ -1300,7 +1300,7 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
       return (nextTokenID - 1);
     }
 
-    function nswapPublicMint(uint256 count) external payable returns(uint256){
+    function nswapPublicMint(uint256 count) external returns(uint256){
       require(count <= oneTimeClaimLimit, "The amount of mining at one time exceeds the limit");
       for(uint i = 0; i < count; i++){
         uint256 _nextTokenID = nextTokenID;
@@ -1312,7 +1312,7 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
       return (nextTokenID - 1);
     }
 
-    function bybitPublicMint(uint256 count) external payable returns(uint256){
+    function bybitPublicMint(uint256 count) external returns(uint256){
       require(count <= oneTimeClaimLimit, "The amount of mining at one time exceeds the limit");
       for(uint i = 0; i < count; i++){
         uint256 _nextTokenID = nextTokenID;
