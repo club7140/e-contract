@@ -1283,44 +1283,77 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
     string internal baseURI;
 
     mapping(uint256 => string) internal _tokenURIs;
-    uint8 public oneTimeClaimLimit = 5;
+    mapping(address => bool) public whitelist;
+    mapping(address => uint256) public claimStatus; 
+
+    uint256 public whitelistLimit = 5;
+    uint256 public normalLimit = 1;
+
     uint256 public nswapMintedCount;
     uint256 public nextTokenID;
     event ClaimNFT(address _user, uint256 _tokenID);
-    constructor() ERC721("Jersey", "Jersey") {}
+    event WhitelistAdded(address indexed user);
+    event WhitelistRemoved(address indexed user);
+    constructor() ERC721("7140Baby", "7140Baby") {}
 
-    function publicMint(uint256 count) external returns(uint256){
-      require(count <= oneTimeClaimLimit, "The amount of mining at one time exceeds the limit");
-      for(uint i = 0; i < count; i++){
-        uint256 _nextTokenID = nextTokenID;
-        _safeMint(msg.sender, _nextTokenID);
-        nextTokenID++;
-        emit ClaimNFT(msg.sender, _nextTokenID);
+    function publicMint() external returns(uint256){
+      if(whitelist[msg.sender]){
+        require(claimStatus[msg.sender] < whitelistLimit, "You have exceeded the limit on the number of mines allowed");
+      }else{
+        require(claimStatus[msg.sender] < normalLimit, "You have exceeded the limit on the number of mines allowed");
       }
-      return (nextTokenID - 1);
+      uint256 _nextTokenID = nextTokenID;
+      _safeMint(msg.sender, _nextTokenID);
+      claimStatus[msg.sender]++;
+      nextTokenID++;
+      emit ClaimNFT(msg.sender, _nextTokenID);
+      return _nextTokenID;
     }
 
     function nswapPublicMint(uint256 count) external returns(uint256){
-      require(count <= oneTimeClaimLimit, "The amount of mining at one time exceeds the limit");
-      for(uint i = 0; i < count; i++){
-        uint256 _nextTokenID = nextTokenID;
-        _safeMint(msg.sender, _nextTokenID);
-        nextTokenID++;
-        emit ClaimNFT(msg.sender, _nextTokenID);
+      require(count == 1, "The amount of mining exceeds the limit");
+      if(whitelist[msg.sender]){
+        require(claimStatus[msg.sender] < whitelistLimit, "You have exceeded the limit on the number of mines allowed");
+      }else{
+        require(claimStatus[msg.sender] < normalLimit, "You have exceeded the limit on the number of mines allowed");
       }
+      uint256 _nextTokenID = nextTokenID;
+      _safeMint(msg.sender, _nextTokenID);
+      claimStatus[msg.sender]++;
+      nextTokenID++;
+      emit ClaimNFT(msg.sender, _nextTokenID);
       nswapMintedCount = nswapMintedCount + count;
-      return (nextTokenID - 1);
+      return _nextTokenID;
+    }
+   
+    function bybitPublicMint() external returns(uint256){
+      if(whitelist[msg.sender]){
+        require(claimStatus[msg.sender] < whitelistLimit, "You have exceeded the limit on the number of mines allowed");
+      }else{
+        require(claimStatus[msg.sender] < normalLimit, "You have exceeded the limit on the number of mines allowed");
+      }
+      uint256 _nextTokenID = nextTokenID;
+      _safeMint(msg.sender, _nextTokenID);
+      claimStatus[msg.sender]++;
+      nextTokenID++;
+      emit ClaimNFT(msg.sender, _nextTokenID);
+      return _nextTokenID;
     }
 
-    function bybitPublicMint(uint256 count) external returns(uint256){
-      require(count <= oneTimeClaimLimit, "The amount of mining at one time exceeds the limit");
-      for(uint i = 0; i < count; i++){
-        uint256 _nextTokenID = nextTokenID;
-        _safeMint(msg.sender, _nextTokenID);
-        nextTokenID++;
-        emit ClaimNFT(msg.sender, _nextTokenID);
+    function mintReserves(address user) returns(uint256) {
+      if(whitelist[msg.sender]){
+        if(whitelistLimit >= claimStatus[msg.sender]){
+          return whitelistLimit - claimStatus[msg.sender];
+        }else{
+          return 0;
+        } 
+      }else{
+        if(normalLimit >= claimStatus[msg.sender]){
+          return normalLimit - claimStatus[msg.sender];
+        }else{
+          return 0;
+        } 
       }
-      return (nextTokenID - 1);
     }
 
     function nswapTotalMinted() external view returns(uint256, uint256){
@@ -1331,8 +1364,12 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
       return (oneTimeClaimLimit, 0);
     }
 
-    function setOneTimeClaimLimit(uint8 _oneTimeClaimLimit) public onlyOwner {
-      oneTimeClaimLimit = _oneTimeClaimLimit;
+    function setWhitelistLimit(uint8 _whitelistLimit) public onlyOwner {
+      whitelistLimit = _whitelistLimit;
+    }
+
+    function setNormalLimit(uint8 _normalLimit) public onlyOwner {
+      normalLimit = _normalLimit;
     }
 
     function getBaseURI() public view returns (string memory) {
@@ -1363,6 +1400,27 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
       }
       // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
       return string(abi.encodePacked(baseURI,"?id=", tokenId.toString()));  
+    }
+
+    function isInWhitelist(address user) public view returns (bool) {
+      return whitelist[user];
+    }
+
+    function addWhitelist(address[] calldata _whitelist) public onlyOwner {
+      for (uint i = 0; i < _whitelist.length; i++) {
+        if(!whitelist[_whitelist[i]]){
+          whitelist[_whitelist[i]] = true;
+          emit WhitelistAdded(_whitelist[i]);
+        }  
+      }
+    }
+    function removeWhitelist(address[] calldata _whitelist) public onlyOwner {
+      for (uint i = 0; i < _whitelist.length; i++) {
+        if(whitelist[_whitelist[i]]){
+          whitelist[_whitelist[i]] = false;
+          emit WhitelistRemoved(_whitelist[i]);
+        }  
+      }
     }
 
     function setApprovalForAll(address operator, bool approved) public override (IERC721,ERC721)onlyAllowedOperatorApproval(operator) {
