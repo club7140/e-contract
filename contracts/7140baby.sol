@@ -1340,7 +1340,7 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
       return _nextTokenID;
     }
 
-    function mintReserves(address user) returns(uint256) {
+    function mintReserves(address user) external returns(uint256) {
       if(whitelist[msg.sender]){
         if(whitelistLimit >= claimStatus[msg.sender]){
           return whitelistLimit - claimStatus[msg.sender];
