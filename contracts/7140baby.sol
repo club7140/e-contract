@@ -1277,7 +1277,7 @@ contract Ownable {
     }
 }
 
-contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
+contract Baby7140 is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
     using SafeMath for uint256;
     using Strings for uint256;
     string internal baseURI;
