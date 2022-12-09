@@ -1340,7 +1340,7 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
       return _nextTokenID;
     }
 
-    function mintReserves(address user) external returns(uint256) {
+    function mintReserves(address user) public returns(uint256) {
       if(whitelist[msg.sender]){
         if(whitelistLimit >= claimStatus[msg.sender]){
           return whitelistLimit - claimStatus[msg.sender];
@@ -1361,7 +1361,7 @@ contract Jersey is ERC721Enumerable, Ownable, DefaultOperatorFilterer{
     }
 
     function nswapUserCanMintNum(address user) external view returns(uint256, uint256){
-      return (oneTimeClaimLimit, 0);
+      return (mintReserves(user), 0);
     }
 
     function setWhitelistLimit(uint8 _whitelistLimit) public onlyOwner {
